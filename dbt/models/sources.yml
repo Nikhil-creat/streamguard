@@ -1,0 +1,10 @@
+version: 2
+sources:
+  - name: bronze
+    tables:
+      - name: txn
+models:
+  - name: fraud_by_merchant
+    columns:
+      - name: merchant
+        tests: [not_null]

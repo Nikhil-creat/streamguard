@@ -1,0 +1,133 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>StreamGuard — Real-Time Fraud Detection Pipeline</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070b14;--panel:#0d1424;--line:#1c2a44;--tx:#e8f0ff;--mu:#8a9bb8;--cy:#38e8ff;--rd:#ff3d81;--am:#ffb547;--gr:#4dffb0;
+--sans:'Space Grotesk',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace}
+*{box-sizing:border-box;margin:0}html{scroll-behavior:smooth}
+body{background:radial-gradient(900px 500px at 85% -10%,#12305a55,transparent),var(--bg);color:var(--tx);font:16px/1.6 var(--sans);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+a{color:var(--cy);text-decoration:none}a:focus-visible,button:focus-visible{outline:2px solid var(--cy);outline-offset:3px}
+.w{max-width:1120px;margin:auto;padding:0 20px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:20px 0;border-bottom:1px solid var(--line);font-size:14px}
+nav b{font-size:18px}nav span{color:var(--mu);font-family:var(--mono);font-size:12px}
+h1{font-size:clamp(34px,6vw,64px);line-height:1.05;margin:44px 0 14px;max-width:16ch;letter-spacing:-.02em}
+.lead{color:var(--mu);max-width:60ch}
+.kpis{display:flex;flex-wrap:wrap;gap:28px;margin:28px 0 36px}
+.kpis div{min-width:120px}.kpis strong{display:block;font:600 28px var(--mono)}.kpis small{color:var(--mu)}
+.live{display:grid;grid-template-columns:1.5fr 1fr;gap:18px}
+@media(max-width:820px){.live,.two{grid-template-columns:1fr!important}}
+.p{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.p h2{font-size:15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--gr);box-shadow:0 0 8px var(--gr);animation:b 1.4s infinite}
+@keyframes b{50%{opacity:.25}}
+.tbl{font:12px/1.5 var(--mono);height:330px;overflow:hidden}
+.tx{display:grid;grid-template-columns:62px 1fr 74px 40px;gap:8px;padding:5px 8px;border-left:3px solid var(--gr);margin-bottom:3px;background:#0a1120;cursor:pointer}
+.tx.med{border-color:var(--am)}.tx.hi{border-color:var(--rd);background:#2a0f1e}
+.tx i{font-style:normal;color:var(--mu)}.tx em{font-style:normal;text-align:right}
+.hi em{color:var(--rd);font-weight:600}.med em{color:var(--am)}
+.grid{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin:8px 0}
+.grid s{aspect-ratio:1;border-radius:2px;background:var(--c)}
+.bar{height:6px;background:#16223a;border-radius:3px;margin:3px 0 10px}.bar u{display:block;height:100%;border-radius:3px;background:var(--cy)}
+.log{font:12px/1.55 var(--mono);color:var(--mu);height:240px;overflow:auto}.log b{color:var(--cy)}.log .r{color:var(--am)}.log .a{color:var(--rd)}
+.flow{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.flow div{flex:1 1 130px;border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--panel)}
+.flow b{display:block;color:var(--cy);font-size:14px}.flow small{color:var(--mu);font-size:12px}
+h3{margin:56px 0 14px;font-size:22px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.chip{display:inline-block;font:12px var(--mono);border:1px solid var(--line);border-radius:999px;padding:4px 12px;margin:0 6px 8px 0;color:var(--mu)}
+button{font:600 13px var(--sans);background:var(--cy);color:#04101a;border:0;border-radius:6px;padding:8px 14px;cursor:pointer}
+pre{font:12px/1.5 var(--mono);background:#050912;border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;color:#b9c8e6}
+footer{margin:64px 0 40px;border-top:1px solid var(--line);padding-top:24px;color:var(--mu);font-size:14px}
+footer .l a{margin-right:16px;display:inline-block}
+@media(prefers-reduced-motion:reduce){.dot{animation:none}html{scroll-behavior:auto}}
+.by{margin:18px 0 0;font:13px var(--mono);color:var(--mu)}.by b{color:var(--tx);letter-spacing:.06em;text-shadow:0 0 18px #38e8ff88}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.fg .p b{color:var(--cy);display:block;margin-bottom:4px}.fg .p span{color:var(--mu);font-size:14px}
+canvas{width:100%;height:90px;display:block}.m{display:flex;gap:22px;flex-wrap:wrap;font:13px var(--mono);margin-top:10px}.m b{display:block;font-size:20px;color:var(--gr)}
+.cr{border:1px solid var(--cy);border-radius:10px;padding:18px;margin:0 0 22px;color:var(--tx);box-shadow:0 0 30px #38e8ff22}
+.ops{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin-top:18px}@media(max-width:820px){.ops{grid-template-columns:1fr}}
+.xb{font:11px var(--mono);color:var(--mu);display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:center;margin:2px 0}.xb u{display:block;height:5px;border-radius:3px;background:var(--rd)}
+input[type=range]{width:100%;accent-color:#38e8ff}.q{font:12px var(--mono);margin-top:8px}.q div{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.q button{padding:3px 9px;font-size:11px;margin-left:4px}.q .no{background:var(--rd);color:#fff}
+</style></head><body><div class="w">
+<nav><b>StreamGuard</b><span>Designed &amp; Developed by NIKHIL CHARY SRIRAMOJU</span></nav>
+<h1>Fraud caught while the transaction is still in flight.</h1>
+<p class="lead">StreamGuard ingests payment events through Kafka, scores them with a CNN, rules and a graph signal, lands them in a Delta Lake medallion, and hands every flagged case to an AI agent that investigates it using RAG over fraud playbooks.</p>
+<p class="by">Designed and Developed by <b>NIKHIL CHARY SRIRAMOJU</b></p>
+<div class="kpis"><div><strong id="k1">0</strong><small>events / sec</small></div><div><strong id="k2">0</strong><small>flagged</small></div><div><strong id="k3">0 ms</strong><small>p95 latency</small></div><div><strong id="k4">0</strong><small>agent cases closed</small></div></div>
+<div class="live">
+ <div class="p"><h2>Live transaction stream <span><i class="dot" style="display:inline-block"></i> txn.raw</span></h2><div class="tbl" id="tbl"></div></div>
+ <div class="p"><h2>CNN sequence scan</h2>
+  <p style="color:var(--mu);font-size:13px">The last 64 transactions on a card as an 8×8 feature image. Hot cells drive the score. Select any row to scan it.</p>
+  <div class="grid" id="grid"></div>
+  <div style="font:12px var(--mono)">risk <span id="rs">—</span></div><div class="bar"><u id="rb" style="width:0"></u></div>
+  <div id="ex" style="margin:6px 0"></div><div style="font:12px var(--mono);color:var(--mu)">cnn <span id="cn">—</span> · rules <span id="ru">—</span> · graph <span id="gr">—</span></div></div>
+</div>
+<div class="two">
+ <div class="p"><h2>Investigator agent <button id="run">Investigate selected</button></h2><div class="log" id="log">Select a transaction, then choose Investigate selected.</div></div>
+ <div class="p"><h2>RAG knowledge base</h2><div class="log" style="height:auto">
+  <span class="chip">fraud-playbooks.md</span><span class="chip">chargeback-policy.pdf</span><span class="chip">RBI fraud guidelines</span><span class="chip">merchant risk profiles</span><span class="chip">past cases</span>
+  <p>Embeddings live in Qdrant. The agent retrieves the closest playbook passages and past cases, cites them, and proposes block, step-up authentication, or release.</p></div></div>
+</div>
+<div class="p" style="margin-top:18px"><h2>Throughput and model quality <span style="color:var(--mu);font:11px var(--mono)">simulator values, not production benchmarks</span></h2><canvas id="cv" width="1000" height="90"></canvas>
+<div class="m"><span><b>0.97</b>ROC-AUC</span><span><b>0.91</b>precision @ 0.6</span><span><b>0.88</b>recall @ 0.6</span><span><b>&lt;60 ms</b>end-to-end target</span></div></div>
+<div class="ops"><div class="p"><h2>Fraud ring graph <span style="color:var(--mu);font:11px var(--mono)">cards, devices, merchants</span></h2><canvas id="gv" width="700" height="260" style="height:260px"></canvas></div>
+<div class="p"><h2>Analyst controls</h2><label style="font:12px var(--mono);color:var(--mu)">Block threshold: <b id="tv" style="color:var(--tx)">0.60</b></label><input id="th" type="range" min="30" max="90" value="60" aria-label="Block threshold">
+<div style="font:12px var(--mono);color:var(--mu);margin-top:10px">Human approval queue</div><div class="q" id="q"><div style="color:var(--mu)">Run an investigation. Block decisions wait here for approval.</div></div></div></div>
+<h3>What is inside</h3><div class="fg">
+<div class="p"><b>Hybrid scoring</b><span>CNN over card sequences, a rule engine, and a graph signal blended into one risk score.</span></div>
+<div class="p"><b>Agentic investigator</b><span>LangGraph agent with SQL, RAG and action tools. It plans, retrieves, reflects, then decides.</span></div>
+<div class="p"><b>Reliable storage</b><span>Delta Lake gives ACID writes, schema enforcement and time travel for audits.</span></div>
+<div class="p"><b>Tested transformations</b><span>dbt models with tests and lineage docs, scheduled hourly by Airflow.</span></div>
+<div class="p"><b>Drift and retraining</b><span>Airflow checks score drift and retrains the CNN on analyst-confirmed labels.</span></div>
+<div class="p"><b>Explainability</b><span>Heatmap of the cells that drove each score, so analysts see why a case was flagged.</span></div>
+<div class="p"><b>Observability</b><span>Prometheus metrics and Grafana dashboards for lag, latency and flag rate.</span></div>
+<div class="p"><b>Governance</b><span>Card tokenization, an audit trail of agent decisions, and human approval for blocks.</span></div></div>
+<h3>Pipeline</h3>
+<div class="flow">
+<div><b>Kafka (KRaft)</b><small>txn.raw · txn.scored · txn.alerts</small></div>
+<div><b>Stream processor</b><small>PyTorch CNN + rule engine</small></div>
+<div><b>Delta Lake</b><small>bronze, silver, gold; ACID; time travel</small></div>
+<div><b>dbt</b><small>tested gold models, lineage docs</small></div>
+<div><b>Airflow</b><small>compaction, dbt runs, retraining</small></div>
+<div><b>Agent + RAG</b><small>LangGraph, Qdrant, FastAPI</small></div></div>
+<div><span class="chip">Python</span><span class="chip">Kafka</span><span class="chip">Apache Airflow</span><span class="chip">dbt</span><span class="chip">Delta Lake</span><span class="chip">PyTorch CNN</span><span class="chip">LangGraph</span><span class="chip">Qdrant</span><span class="chip">FastAPI</span><span class="chip">Docker</span><span class="chip">Prometheus</span><span class="chip">Grafana</span></div>
+<h3>Run it</h3><pre>git clone https://github.com/Nikhil-creat/streamguard
+cd streamguard &amp;&amp; docker compose up --build
+# API docs :8000/docs   Airflow :8080   Grafana :3000   MinIO :9001</pre>
+<footer><div class="cr">Designed and Developed by <b style="font-size:20px;letter-spacing:.05em">NIKHIL CHARY SRIRAMOJU</b><br>Final-year B.Tech CSE · Data Engineering · Agentic AI · RAG · CNN</div><b style="color:var(--tx)">Nikhil Chary Sriramoju</b> — final-year B.Tech CSE student and builder of StreamGuard.
+<p style="margin:10px 0" class="l"><a href="https://github.com/Nikhil-creat">GitHub</a><a href="https://in.linkedin.com/in/nikhil-chary-sriramoju-95041b38a">LinkedIn</a><a href="https://www.instagram.com/nikhil__sriramoju">Instagram</a><a href="https://www.facebook.com/profile.php?id=100079201124141">Facebook</a></p>
+<p><a href="mailto:sriramojunikhil66@gmail.com">sriramojunikhil66@gmail.com</a> · <a href="tel:+916300556301">+91 63005 56301</a></p></footer></div>
+<script>
+const $=id=>document.getElementById(id),M=['Zomato','Amazon','Uber','Flipkart','Steam','CryptoX','Swiggy','Airline','ATM'],C=['IN','IN','IN','US','AE','NG','RU'];
+let T=.6,n=0,fl=0,cl=0,sel=null,rows=[];
+const r=(a,b)=>Math.random()*(b-a)+a;
+function mk(){const amt=Math.round(Math.random()<.12?r(30000,250000):r(80,6000)),m=M[Math.floor(r(0,M.length))],c=C[Math.floor(r(0,C.length))];
+ const cnn=Math.min(1,(amt>20000?.5:.05)+(c!='IN'?.25:0)+(['CryptoX','Steam'].includes(m)?.15:0)+r(0,.2)),ru=amt>50000?.9:r(0,.4),gr=c!='IN'?r(.3,.8):r(0,.3);
+ return{id:'T'+(100000+n++),amt,m,c,cnn,ru,gr,s:+(.55*cnn+.25*ru+.2*gr).toFixed(2),card:'•••• '+Math.floor(r(1000,9999))}}
+function draw(){$('tbl').innerHTML=rows.map((x,i)=>`<div class="tx ${x.s>T?'hi':x.s>T-.2?'med':''}" data-i="${i}"><span>${x.id}</span><i>${x.m} · ${x.c}</i><span>₹${x.amt.toLocaleString('en-IN')}</span><em>${x.s}</em></div>`).join('')}
+function scan(x){sel=x;$('grid').innerHTML=Array.from({length:64},()=>{const v=Math.random()*x.s*1.3;return`<s style="--c:hsl(${190-v*190},90%,${18+v*45}%)"></s>`}).join('');
+ $('rs').textContent=x.s;$('rb').style.width=x.s*100+'%';$('rb').style.background=x.s>.6?'var(--rd)':x.s>.4?'var(--am)':'var(--cy)';
+ $('ex').innerHTML=[['amount',Math.min(1,x.amt/1e5)],['geography',x.c!='IN'?.8:.1],['merchant',['CryptoX','Steam'].includes(x.m)?.8:.2],['velocity',x.gr]].map(a=>`<div class="xb">${a[0]}<u style="width:${a[1]*100}%"></u></div>`).join('');$('cn').textContent=x.cnn.toFixed(2);$('ru').textContent=x.ru.toFixed(2);$('gr').textContent=x.gr.toFixed(2)}
+$('tbl').onclick=e=>{const t=e.target.closest('.tx');if(t)scan(rows[+t.dataset.i])};
+setInterval(()=>{const x=mk();rows.unshift(x);rows=rows.slice(0,11);if(x.s>T)fl++;draw();if(!sel)scan(x);
+ $('k1').textContent=Math.round(r(1180,1420));$('k2').textContent=fl;$('k3').textContent=Math.round(r(38,52))+' ms';$('k4').textContent=cl},900);
+$('run').onclick=()=>{if(!sel)return;const x=sel,L=$('log');L.innerHTML='';
+ const st=[`<b>plan</b> investigate ${x.id} (${x.card}, ₹${x.amt.toLocaleString('en-IN')} at ${x.m}, ${x.c})`,
+ `<b>tool:sql</b> delta.gold.card_velocity → ${Math.floor(r(3,14))} txns in last 10 min`,
+ `<b>tool:rag</b> query "high-value ${x.m} cross-border velocity"`,
+ `<span class="r">retrieved</span> playbook §4.2 “velocity spike + new geography” (sim 0.91)`,
+ `<span class="r">retrieved</span> case #8841, same pattern, confirmed fraud (sim 0.87)`,
+ `<b>reflect</b> evidence consistent with card testing; risk ${x.s}`,
+ x.s>.6?`<span class="a">decision: BLOCK + step-up auth, notify cardholder</span>`:x.s>.4?`<span class="r">decision: STEP-UP authentication</span>`:`decision: RELEASE, monitor 24h`];
+ st.forEach((s,i)=>setTimeout(()=>{L.innerHTML+=s+'<br>';L.scrollTop=1e5;if(i==st.length-1){cl++;if(x.s>T)queue(x)}},i*550))};
+const cv=$('cv'),cx=cv.getContext('2d'),sp=Array(60).fill(1300);
+setInterval(()=>{sp.push(r(1150,1450));sp.shift();cx.clearRect(0,0,1000,90);cx.strokeStyle='#38e8ff';cx.lineWidth=2;cx.beginPath();sp.forEach((v,i)=>{const y=85-(v-1100)/350*80;i?cx.lineTo(i*1000/59,y):cx.moveTo(0,y)});cx.stroke()},900);
+$('th').oninput=e=>{T=e.target.value/100;$('tv').textContent=T.toFixed(2)};
+function queue(x){const q=$('q');if(q.firstChild&&q.firstChild.style)q.innerHTML='';const d=document.createElement('div');d.innerHTML=`<span>${x.id} · score ${x.s}</span><span><button>Approve block</button><button class="no">Release</button></span>`;
+ d.querySelectorAll('button').forEach(b=>b.onclick=()=>{d.innerHTML=`<span>${x.id}</span><span style="color:var(--gr)">${b.className?'released':'blocked'} · logged to audit trail</span>`});q.prepend(d)}
+const gv=$('gv'),g=gv.getContext('2d'),N=Array.from({length:34},(_,i)=>({x:r(30,670),y:r(20,240),vx:r(-.25,.25),vy:r(-.25,.25),ring:i<8}));
+setInterval(()=>{g.clearRect(0,0,700,260);N.forEach((a,i)=>{a.x+=a.vx;a.y+=a.vy;if(a.x<10||a.x>690)a.vx*=-1;if(a.y<10||a.y>250)a.vy*=-1;
+ N.forEach((b,j)=>{if(j>i){const d=Math.hypot(a.x-b.x,a.y-b.y),rg=a.ring&&b.ring;if(d<(rg?170:70)){g.strokeStyle=rg?'#ff3d8199':'#1c2a44';g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke()}}});
+ g.fillStyle=a.ring?'#ff3d81':'#38e8ff';g.beginPath();g.arc(a.x,a.y,a.ring?5:3,0,7);g.fill()})},50);
+</script></body></html>

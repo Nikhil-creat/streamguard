@@ -1,0 +1,4 @@
+name: streamguard
+version: "1.0"
+profile: streamguard
+model-paths: ["models"]
